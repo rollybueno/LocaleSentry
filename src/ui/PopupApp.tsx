@@ -1,8 +1,23 @@
+import { useState } from 'react';
+import { openSidePanelFromUi } from './openPanel';
 import { useScan } from './useScan';
-import { send } from './bridge';
 
 export function PopupApp() {
-  const { report, error, scanning, scan } = useScan();
+  const { report, error, scanning, scan, setError } = useScan();
+  const [openingPanel, setOpeningPanel] = useState(false);
+
+  function openPanel() {
+    setOpeningPanel(true);
+    setError(null);
+    openSidePanelFromUi((openError) => {
+      if (openError) {
+        setError(openError);
+        setOpeningPanel(false);
+        return;
+      }
+      window.close();
+    });
+  }
 
   return (
     <div className="app popup">
@@ -41,8 +56,8 @@ export function PopupApp() {
           <button className="btn-primary" type="button" onClick={() => void scan()} disabled={scanning}>
             {scanning ? 'Scanning…' : 'Scan this page'}
           </button>
-          <button type="button" onClick={() => void send({ type: 'OPEN_SIDEPANEL' })}>
-            Open panel
+          <button type="button" onClick={openPanel} disabled={openingPanel}>
+            {openingPanel ? 'Opening…' : 'Open panel'}
           </button>
         </div>
       </main>

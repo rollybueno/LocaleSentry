@@ -7,6 +7,8 @@ import { getSettings, lastReportItem, patchSettings } from '../lib/storage/setti
 import type { PageSnapshot } from '../lib/types';
 
 export default defineBackground(() => {
+  void browser.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: false });
+
   browser.runtime.onMessage.addListener(
     (
       message: Message,
@@ -53,8 +55,6 @@ async function handleMessage(message: Message, sender: { tab?: { id?: number } }
     }
     case 'HAS_HOST_PERMISSION':
       return { hasHostPermission: await hasHostPermission() };
-    case 'OPEN_SIDEPANEL':
-      return openSidePanel();
     case 'HIGHLIGHT': {
       const settings = await getSettings();
       if (!settings.highlightElements) {
@@ -121,26 +121,4 @@ async function forwardToTab(message: Message, tabId?: number) {
   } catch {
     return { ok: false, reason: 'Could not reach the page. Scan it first.' };
   }
-}
-
-async function openSidePanel() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) return { ok: false, reason: 'No active tab.' };
-  const sidePanel = browser.sidePanel as
-    | { open: (options: { tabId: number }) => Promise<void> }
-    | undefined;
-  if (sidePanel?.open) {
-    await sidePanel.open({ tabId: tab.id });
-    return { ok: true };
-  }
-  const sidebarAction = (
-    browser as typeof browser & {
-      sidebarAction?: { open: () => Promise<void> };
-    }
-  ).sidebarAction;
-  if (sidebarAction?.open) {
-    await sidebarAction.open();
-    return { ok: true };
-  }
-  return { ok: false, reason: 'Side panel is not available in this browser.' };
 }

@@ -5,7 +5,6 @@ export type Message =
   | { type: 'HIGHLIGHT'; selector: string }
   | { type: 'CLEAR_HIGHLIGHT' }
   | { type: 'GET_LAST_REPORT' }
-  | { type: 'OPEN_SIDEPANEL' }
   | { type: 'REQUEST_HOST_PERMISSION' }
   | { type: 'REVOKE_HOST_PERMISSION' }
   | { type: 'GET_SETTINGS' }
